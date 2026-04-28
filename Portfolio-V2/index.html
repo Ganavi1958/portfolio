@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ganavi A D | Modern Portfolio</title>
+    <!-- Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS resets and variables */
+        :root {
+            --bg-color: #0b1120;
+            --bg-gradient: linear-gradient(135deg, #0b1120 0%, #0a0f1d 100%);
+            --primary-blue: #3b82f6;
+            --primary-blue-glow: rgba(59, 130, 246, 0.5);
+            --gradient-blue: linear-gradient(135deg, #60a5fa, #3b82f6);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-color: var(--bg-color); /* fallback */
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+        }
+
+        /* Top Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: var(--transition);
+            background: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            color: var(--text-main);
+        }
+
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-blue);
+            bottom: -5px;
+            left: 0;
+            transition: var(--transition);
+        }
+
+        .nav-links li a:hover::after,
+        .nav-links li a.active::after {
+            width: 100%;
+        }
+
+        /* Hamburger menu for mobile */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background: var(--text-main);
+            transition: var(--transition);
+        }
+
+        /* Application Container */
+        .app-container {
+            padding-top: 80px; /* Offset for navbar */
+        }
+
+        /* Reusable Section Styles (Tabbed Navigation) */
+        section {
+            padding: 50px 5%;
+            min-height: calc(100vh - 80px); /* Height minus navbar */
+            display: none; /* Hidden by default */
+            align-items: center;
+            flex-direction: column;
+        }
+
+        section.active-section {
+            display: flex; /* Shown when active */
+            animation: fadeInTab 0.5s ease;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 60px;
+            font-weight: 700;
+            width: 100%;
+        }
+
+        .section-title span {
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-blue);
+            color: #fff;
+            box-shadow: 0 5px 20px var(--primary-blue-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.8);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background: var(--gradient-blue);
+            border-color: transparent;
+            transform: translateY(-3px);
+        }
+
+        /* Hero Section */
+        #home .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .hero-left {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-left h1 {
+            font-size: 4rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero-left h1 span {
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-left p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hero-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .profile-img-container {
+            position: relative;
+            z-index: 1;
+            border-radius: 30px;
+            padding: 10px;
+        }
+
+        .profile-img-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 35px;
+            background: var(--primary-blue);
+            filter: blur(50px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); }
+            100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .profile-img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            display: block;
+        }
+
+        /* Education */
+        #education .edu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #education .edu-card {
+            padding: 30px;
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+
+        .edu-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .edu-year {
+            color: var(--primary-blue);
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .edu-title {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .edu-inst {
+            color: var(--text-muted);
+        }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .skill-item {
+            margin-bottom: 25px;
+        }
+
+        .skill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .skill-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .skill-progress {
+            height: 100%;
+            background: var(--gradient-blue);
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* Projects */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            border-radius: 20px;
+            overflow: hidden;
+            padding: 30px;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .project-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .project-desc {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .project-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .project-tags span {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Certification */
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .cert-card {
+            padding: 30px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+        }
+
+        .cert-card:hover {
+            transform: translateY(-5px);
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .cert-icon {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            background: rgba(59,130,246,0.1);
+            padding: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Interest */
+        .interest-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .interest-tag {
+            padding: 15px 30px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: default;
+        }
+
+        .interest-tag:hover {
+            background: var(--gradient-blue);
+            color: white;
+            transform: scale(1.05);
+            border-color: transparent;
+        }
+
+        /* Contact */
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        textarea.form-control {
+            height: 150px;
+            resize: vertical;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .navbar {
+                padding: 20px;
+            }
+            #home .container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero-left h1 {
+                font-size: 3rem;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: -100%;
+                width: 100%;
+                background: rgba(11, 17, 32, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 0;
+                transition: var(--transition);
+                border-bottom: 1px solid var(--card-border);
+            }
+            .nav-links.active {
+                left: 0;
+            }
+            .hamburger {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Top Navbar -->
+    <header class="navbar" id="navbar">
+        <a href="#home" class="logo">Ganavi A D</a>
+        <div class="hamburger" id="hamburger">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#education" class="nav-link">Education</a></li>
+            <li><a href="#skills" class="nav-link">Skills</a></li>
+            <li><a href="#certification" class="nav-link">Certification</a></li>
+            <li><a href="#interest" class="nav-link">Interest</a></li>
+            <li><a href="#project" class="nav-link">Project</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+    </header>
+
+    <div class="app-container">
+        <!-- Hero Section -->
+        <section id="home">
+            <div class="container">
+                <div class="hero-left">
+                    <h1>Hi, I'm <br><span>Ganavi A D.</span></h1>
+                    <p>
+                        “I am an MCA student with a strong interest in software development and emerging technologies. I have a good understanding of programming languages like Java, Python, and web development basics. I am passionate about building efficient solutions and continuously improving my technical skills.”
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#project" class="btn btn-primary" data-nav="project">My Projects</a>
+                        <a href="#contact" class="btn btn-outline" data-nav="contact">Contact Me</a>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="profile-img-container">
+                        <img src="../Portfolio/assets/profile.jpeg" onerror="this.src='https://via.placeholder.com/400x400/1e293b/60a5fa?text=Profile+Image'" alt="Ganavi A D" class="profile-img">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education">
+            <div class="container">
+                <h2 class="section-title">My <span>Education</span></h2>
+                <div class="edu-grid">
+                    <div class="edu-card glass">
+                        <span class="edu-year">Pursuing</span>
+                        <h3 class="edu-title">Master of Computer Application (MCA)</h3>
+                        <p class="edu-inst">MIT College, Mysore</p>
+                    </div>
+                    <div class="edu-card glass">
+                        <span class="edu-year">Completed</span>
+                        <h3 class="edu-title">Bachelor of Computer Application (BCA)</h3>
+                        <p class="edu-inst">NIE First Grade College, Mysore</p>
+                    </div>
+                    <div class="edu-card glass">
+                        <span class="edu-year">Pre-University</span>
+                        <h3 class="edu-title">PUC</h3>
+                        <p class="edu-inst">BGS PU College, Mysore</p>
+                    </div>
+                    <div class="edu-card glass">
+                        <span class="edu-year">Schooling</span>
+                        <h3 class="edu-title">SSLC</h3>
+                        <p class="edu-inst">Anugraha Vidyasamaste, Halli Mysore</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills">
+            <div class="container">
+                <h2 class="section-title">Professional <span>Skills</span></h2>
+                <div class="skills-grid">
+                    <div class="skills-column">
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>Java</span>
+                                <span>80%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="80%"></div></div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>Python</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="75%"></div></div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>C</span>
+                                <span>70%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="70%"></div></div>
+                        </div>
+                    </div>
+                    <div class="skills-column">
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>HTML5/CSS3</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="85%"></div></div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>JavaScript</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="75%"></div></div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <span>Database Fundamentals</span>
+                                <span>70%</span>
+                            </div>
+                            <div class="skill-bar"><div class="skill-progress" style="width: 0%" data-target="70%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Certification Section -->
+        <section id="certification">
+            <div class="container">
+                <h2 class="section-title">My <span>Certification</span></h2>
+                <div class="cert-grid">
+                    <div class="cert-card glass">
+                        <div class="cert-icon">🏆</div>
+                        <div>
+                            <h3 style="font-size: 1.3rem; margin-bottom: 5px;">UI/UX Technology</h3>
+                            <p style="color: var(--text-muted);">Rankbook software technology, Mysore</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interest Section -->
+        <section id="interest">
+            <div class="container">
+                <h2 class="section-title">My <span>Interests</span></h2>
+                <div class="interest-tags">
+                    <div class="interest-tag glass">🎨 UI/UX Design</div>
+                    <div class="interest-tag glass">💻 Web Development</div>
+                    <div class="interest-tag glass">🤖 Artificial Intelligence</div>
+                    <div class="interest-tag glass">📚 Continuous Learning</div>
+                    <div class="interest-tag glass">✈️ Traveling</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Project Section -->
+        <section id="project">
+            <div class="container">
+                <h2 class="section-title">Featured <span>Projects</span></h2>
+                <div class="projects-grid">
+                    <div class="project-card glass">
+                        <h3 class="project-title">Handwritten Digit & Character Recognition</h3>
+                        <p class="project-desc">An AI-driven approach to deciphering and understanding handwritten inputs dynamically focusing on accuracy and performance.</p>
+                        <div class="project-tags">
+                            <span>Python</span>
+                            <span>Machine Learning</span>
+                            <span>AI</span>
+                        </div>
+                    </div>
+                    <div class="project-card glass">
+                        <h3 class="project-title">Student Management System</h3>
+                        <p class="project-desc">A comprehensive system designed to organize and streamline student data efficiently replacing manual record keeping.</p>
+                        <div class="project-tags">
+                            <span>Java</span>
+                            <span>SQL</span>
+                            <span>Database</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact">
+            <div class="container">
+                <h2 class="section-title">Get In <span>Touch</span></h2>
+                <form class="contact-form glass" onsubmit="event.preventDefault(); alert('Message sent successfully!');">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript for Tab Interaction -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.getElementById('navLinks');
+            const navItems = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            const progressBars = document.querySelectorAll('.skill-progress');
+            const internalLinks = document.querySelectorAll('[data-nav]');
+
+            // Mobile Menu Toggle
+            hamburger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+
+            // Set up skill progress bar animations
+            progressBars.forEach(bar => {
+                bar.style.width = '0%';
+                bar.style.transition = 'width 1초 ease-in-out';
+            });
+
+            // The main function to toggle "pages" (tabs)
+            function navigateToSection(targetId) {
+                // Remove active classes
+                navItems.forEach(item => item.classList.remove('active'));
+                sections.forEach(section => section.classList.remove('active-section'));
+
+                // Find corresponding section and link
+                const targetSection = document.getElementById(targetId);
+                const targetLink = document.querySelector(`.nav-link[href="#${targetId}"]`);
+                
+                if (targetSection) {
+                    targetSection.classList.add('active-section');
+                }
+                
+                // Keep the navigation link active
+                if (targetLink) {
+                    targetLink.classList.add('active');
+                }
+
+                // Play animation for skills
+                if (targetId === 'skills') {
+                    // Slight delay to allow CSS display block to take effect before tracking width
+                    setTimeout(() => {
+                        progressBars.forEach(bar => {
+                            bar.style.width = bar.getAttribute('data-target');
+                        });
+                    }, 50);
+                } else {
+                    // Reset skill widths
+                    progressBars.forEach(bar => {
+                        bar.style.width = '0%';
+                    });
+                }
+
+                window.scrollTo({top: 0, behavior: 'auto'}); // reset scroll position if scrolling within section
+            }
+
+            // Click listener for Navbar
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navLinks.classList.remove('active'); // hide mobile menu
+                    
+                    const targetId = item.getAttribute('href').substring(1);
+                    navigateToSection(targetId);
+                    
+                    // Update URL hash for sharing/history
+                    history.pushState(null, null, `#${targetId}`);
+                });
+            });
+
+            // Listen to other buttons mapping to sections (e.g. My Projects, Contact Me)
+            internalLinks.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('data-nav');
+                    navigateToSection(targetId);
+                    history.pushState(null, null, `#${targetId}`);
+                });
+            });
+
+            // Setup initial load logic
+            const initialHash = window.location.hash.substring(1) || 'home';
+            navigateToSection(initialHash);
+            
+            // Handle browser Back/Forward navigation
+            window.addEventListener('popstate', () => {
+                const currentHash = window.location.hash.substring(1) || 'home';
+                navigateToSection(currentHash);
+            });
+        });
+    </script>
+</body>
+</html>
